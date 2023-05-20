@@ -5,15 +5,12 @@ require('dotenv').config()
 const port = process.env.PORT || 5000;
 const app = express();
 
-
 app.use(cors())
 app.use(express.json())
 
 app.get('/', (req, res) =>{
     res.send('Toy Land is running..........')
 })
-
-
 
 const uri = `mongodb+srv://${process.env.TOY_LAND_USERNAME}:${process.env.TOY_LAND_PASS}@cluster0.xtu99cu.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -48,6 +45,16 @@ async function run() {
     app.post('/alltoys', async(req, res) =>{
         const addToy = req.body;
         const result = await toyCollection.insertOne(addToy);
+        res.send(result)
+    })
+
+    app.get('/myToys', async(req, res)=>{
+        console.log('inside query', req.query.email);
+        let query = {}
+        if(req.query?.email){
+            query = {email: req.query.email}
+        }
+        const result = await toyCollection.find(query).toArray()
         res.send(result)
     })
 
