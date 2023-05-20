@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
 const app = express();
@@ -31,9 +31,19 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    const toyCollection = client.db('ToyLand').collection('alltoys')
 
+    app.get('/alltoys', async(req, res) =>{
+        const result = await toyCollection.find().toArray();
+        res.send(result)
+    })
 
-
+    app.get('/alltoys/:id', async(req, res) =>{
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)}
+        const result = await toyCollection.findOne(query);
+        res.send(result)
+    })
 
 
     // Send a ping to confirm a successful connection
