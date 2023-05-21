@@ -42,6 +42,12 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/toybycategory/:sub_category', async (req, res) => {
+            const id = req.params.sub_category;
+            const result = await toyCollection.find({sub_category: id}).toArray()
+            res.send(result)
+        })
+
         app.post('/alltoys', async (req, res) => {
             const addToy = req.body;
             const result = await toyCollection.insertOne(addToy);
@@ -58,11 +64,58 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/myToys/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await toyCollection.findOne(query)
+            res.send(result)
+        })
+
+        // update
+        app.put('/myToys/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const updatedToy = req.body;
+            console.log(id, updatedToy);
+            const newToy = {
+                $set: {
+                    toy_name: updatedToy.toy_name,
+                    sub_category: updatedToy.sub_category,
+                    price: updatedToy.price,
+                    rating: updatedToy.rating,
+                    available_quantity: updatedToy.available_quantity,
+                    toy_img: updatedToy.toy_img,
+                    seller_name: updatedToy.seller_name,
+                    email: updatedToy.email,
+                    description: updatedToy.description
+                }
+            }
+            const result = await toyCollection.updateOne(filter, newToy, options);
+            res.send(result)
+        })
+
         app.delete('/myToys/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await toyCollection.deleteOne(query)
             res.send(result)
+        })
+
+        // search 
+        app.get('/alltoys', async (req, res) => {
+            const sort = req.query.sort;
+            const search = req.query.search;
+            console.log(sort, search);
+            const query = {title: { $regex: search, $options: 'i'}}
+            const options = {
+                sort: { 
+                    "price": sort === 'asc' ? 1 : -1
+                }
+            };
+            const cursor = toyCollection.find(query, options);
+            const result = await cursor.toArray();
+            res.send(result);
         })
 
 
