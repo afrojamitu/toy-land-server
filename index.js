@@ -8,6 +8,13 @@ const app = express();
 app.use(cors())
 app.use(express.json())
 
+const corsOptions ={
+    origin:'*',
+    credentials:true,
+    optionSuccessStatus:200,
+    }
+    app.use(cors(corsOptions))
+
 app.get('/', (req, res) => {
     res.send('Toy Land is running..........')
 })
@@ -17,11 +24,14 @@ const uri = `mongodb+srv://${process.env.TOY_LAND_USERNAME}:${process.env.TOY_LA
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
     serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
-});
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    maxPoolSize: 10,
+  });
 
 async function run() {
     try {
@@ -124,7 +134,12 @@ async function run() {
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
-        // await client.close();
+        client.connect((error)=>{
+            if(error){
+              console.log(error)
+              return;
+            }
+          });
     }
 }
 run().catch(console.dir);
