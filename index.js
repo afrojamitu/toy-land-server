@@ -8,16 +8,7 @@ const app = express();
 app.use(cors())
 app.use(express.json())
 
-const corsOptions ={
-    origin:'*',
-    credentials:true,
-    optionSuccessStatus:200,
-    }
-    app.use(cors(corsOptions))
 
-app.get('/', (req, res) => {
-    res.send('Toy Land is running..........')
-})
 
 const uri = `mongodb+srv://${process.env.TOY_LAND_USERNAME}:${process.env.TOY_LAND_PASS}@cluster0.xtu99cu.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -27,26 +18,18 @@ const client = new MongoClient(uri, {
       version: ServerApiVersion.v1,
       strict: true,
       deprecationErrors: true,
-    },
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    maxPoolSize: 10,
+    }
   });
 
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        client.connect((error)=>{
-            if(error){
-              console.log(error)
-              return;
-            }
-          });
+        // await client.connect(); 
 
         const toyCollection = client.db('ToyLand').collection('alltoys')
 
         app.get('/alltoys', async (req, res) => {
-            const result = await toyCollection.find().toArray();
+            const result = await toyCollection.find({}).toArray();
             res.send(result)
         })
 
@@ -139,11 +122,16 @@ async function run() {
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
-        await client.close();
+        // await client.close();
     }
 }
+
+
 run().catch(console.dir);
 
+app.get('/', (req, res) => {
+    res.send('Toy Land is running..........')
+})
 
 app.listen(port, () => {
     console.log(`Toy Server is running on port ${port}`);
